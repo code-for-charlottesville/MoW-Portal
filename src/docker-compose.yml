@@ -1,0 +1,46 @@
+version: '3.7'
+services:
+  db:
+    image: postgres:11.7
+    volumes:
+      - datavolume:/var/lib/postgresql/data
+    networks:
+      - db_network
+    env_file:
+      - .env
+  web:
+    build: .
+    tty: true
+    command: /bin/bash -c "chmod +x start.sh && /code/start.sh"
+    volumes:
+      - staticvolume:/collected-static
+      - .:/code
+    depends_on:
+      - db
+    networks:
+      - nginx_network
+      - db_network
+      - cron_network
+    expose:
+      - 8000
+      - 22
+    env_file:
+      - .env
+  cron:
+    build: ./cron
+    networks:
+      - cron_network
+    depends_on:
+      - web
+
+
+networks:
+  nginx_network:
+    driver: bridge
+  db_network:
+    driver: bridge
+  cron_network:
+    driver: bridge
+volumes:
+  datavolume:
+  staticvolume:

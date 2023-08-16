@@ -1,0 +1,43 @@
+
+
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <title>Route Report</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+<body>
+    {% load route_extras %}
+        {% for elem in data %}
+        <p style="text-align:right"><em>Questions? Call: (434) 293-4364</em></p>
+        <h4><b>{{ elem.route }} | {{ elem.date }} | Volunteer(s): {{elem.vols}} | Meals: {{ elem.total_meals }}</b></h4>
+        <table class="table table-condensed">
+            <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>Notes</th>
+                        <th>Diet</th>
+                        <th>Meals</th>
+                    </tr>
+            </thead>
+            <tbody>
+                {% for c in elem.customer_list %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{ c }}</td>
+                        <td>{{ c.address }}</td>
+                        <td>{{ c.printed_notes }}</td>
+                        <td>{{ c.diet.code }}</td>
+                        <td>{{ c|numMealsOnDay:elem.date }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="page-break">.</div>
+        {% endfor %}
+</body>
+</html>

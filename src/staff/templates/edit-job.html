@@ -1,0 +1,113 @@
+<!-- templates/welcome-staff.html-->
+{% extends 'navbar_staff.html' %}
+
+{% block title %}Edit Job{% endblock %}
+
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+<style>
+    .accordion-button:not(.collapsed), .accordion-button:is(.collapsed) {
+      color: #333;
+      background-color: #f5f5f5;
+      border-color: #ddd;
+      border: none;
+      font-weight: 600;
+      color: rgb(51, 51, 51);
+      font-size: 16px;
+  }
+  label {
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+</style>
+<script src="{% static 'staff/TableSort.js' %}"></script>
+<div class="container" style="padding-bottom: 5%;">
+<div style="text-align: center; padding-bottom: 2%;">
+    <h1 class="mb-4">Edit {{job_type}}</h1>
+    <div style="display: inline;">
+        <a href="mailto:?bcc={{emails.assigned_emails}}" class="btn btn-default btn-outline-dark"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> Email assigned volunteers</a>
+        <a href="mailto:?bcc={{emails.sub_emails}}" class="btn btn-default btn-outline-dark"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> Email future substitutes</a>
+        <a href="mailto:?bcc={{emails.all_emails}}" class="btn btn-default btn-outline-dark"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> Email assigned volunteers and future substitutes</a>
+    </div>
+</div>
+{% if form.errors %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+<script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
+<form method="post" class="post-form">
+    {% csrf_token %}
+    <div class="row justify-content-between">
+        <div class="form-group col-md-6 mb-3">
+          {{ form.name|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-6">
+            {{ form.num_vols_required|as_crispy_field }}
+        </div>
+    </div>
+    <!-- Hidden for now -->
+        <!-- <div class="form-row">
+            <div class="form-group col-md-12 mb-0">
+                <p><strong>Job Recurrence*</strong></p>
+                {{ form.media }}
+                {{ form.recurrence }}
+            </div>
+        </div> -->
+      <div class="form-row mt-3">
+          <button type="submit" class="btn btn-primary">Save</button>
+          <a class="btn btn-default btn-outline-dark" style="margin-left: 2%" href="{% url 'staff:delete_job' pk=job_pk %}" onclick="return confirm('Are you sure? Deleting this job will delete all assignments and substitutions associated with it. If it is a route, all customers will be no longer assigned to it.')"><span style="color:red;" class="fa-solid fa-x" aria-hidden="true"></span> Delete This Job</a>
+      </div>
+  </form>
+  <!-- Assignments table -->
+  <div style="padding-bottom: 2%; padding-top: 5%;">
+    <!-- https://getbootstrap.com/docs/3.4/javascript/#collapse-example-accordion -->
+    <div class="accordion shadow" id="accordion" role="tablist" aria-multiselectable="true">
+      <div class="accordion-item">
+        <div class="panel-heading" role="tab" id="Assignment_heading">
+        <h4 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-parent="" aria-controls="#Assignments" aria-expanded="true" data-bs-target="#Assignments">
+              Assignments
+            </button>
+        </h4>
+        </div>
+        <div id="Assignments" class="accordion-collapse collapse show" aria-labelledby="Assignments">
+          <div class="accordion-body" id="assignemnts-table">
+            <div class="float-end mb-4">
+                <a href="#" class="btn btn-default btn-outline-dark" id="email-shown-vols-button" style="visibility: hidden;"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> Email shown volunteers</a>
+            </div>
+            <span class="clearfix"></span>
+            <div style="text-align: center;">
+                <h3>Manage Assignments</h3>
+                <div style="width: 33%; margin-left: 33%; padding-bottom: 1%;" id="filterDiv" hidden>
+                    <p style="display: inline-block; padding-right: 1%;">Filter:</p>
+                    <input style="display: inline-block; width: 80%;" id="search" class="form-control" placeholder="None"/>
+                    <small style="visibility: hidden;" id="multiple-filter-note">Separate multiple filters with: &&</small>
+                </div>
+            </div>
+            <div id="assignments"><h4>Loading assignments. This may take a few seconds<span id='periods'>.</span></h4></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{% static 'staff/TableSearch.js' %}"></script>
+<script type="text/javascript">
+    var request_url = '{{url}}'
+</script>
+<script src="{% static 'staff/AssignmentTableFunctions.js' %}"></script>
+
+
+{% endblock %}
+

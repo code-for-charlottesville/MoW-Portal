@@ -1,0 +1,388 @@
+{% extends 'navbar_staff.html' %}
+
+{% block title %}Route Detail{% endblock %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+
+<style>
+  .accordion-button:not(.collapsed), .accordion-button:is(.collapsed) {
+    color: #333;
+    background-color: #f5f5f5;
+    border-color: #ddd;
+    border: none;
+    font-weight: 600;
+    color: rgb(51, 51, 51);
+    font-size: 16px;
+}
+label {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.save-btn {
+  max-width: 138px;
+  padding: 6px 12px;
+}
+.btn-cancel {
+  max-width: 178px;
+  padding: 6px 12px;
+}
+</style>
+<script>
+    var locs = [];
+    var rt_length = 0;
+    var rt_num = parseInt("{{ route_num }}");
+    var ordered = [];
+</script>
+<div class="col-md-12 pe-4 text-center">
+    <form role="form" class="row row-cols-lg-auto col-md-3 col-sm-12 align-items-center ms-auto" method="POST" action="{% url 'routes:parse_date_form' route_number=route_num%}">
+      {% csrf_token %}
+      <div class="input-group ms-auto">
+          <label class="align-self-center fw-bold me-3">View Specific Day: </label>
+          <input name="date" type=date class="form-control me-3" value="{{date_picker_date}}"/>
+          <button type="submit" class="btn btn-primary">Go</button>
+      </div>
+  </form>
+</div>
+<div class="w-100 text-center">
+  <div class="text-center pb-3 mb-3">
+    <h1>Edit {{route_name}}</h1>
+    <div style="display: inline;">
+      <a href="mailto:?bcc={{emails.assigned_emails}}" class="btn btn-default btn-outline-dark"><i class="fa-solid fa-envelope"></i> Email assigned volunteers</a>
+      <a href="mailto:?bcc={{emails.sub_emails}}" class="btn btn-default btn-outline-dark"><i class="fa-solid fa-envelope"></i> Email future substitutes</a>
+      <a href="mailto:?bcc={{emails.all_emails}}" class="btn btn-default btn-outline-dark"><i class="fa-solid fa-envelope"></i> Email assigned volunteers and future substitutes</a>
+    </div>
+  </div>
+  <div class="row mx-md-5">
+    <div class="col-md-6 col-sm-12">
+      <p id="bonusPantryNotice" hidden="true">This is a bonus pantry delivery, please edit route {{ mainRoute }} to make changes</p>
+      <div id="cust_list" style="width: 95%; text-align: center; display: inline-block;">
+        <table class='table table-hover'>
+          <thead>
+            <tr>
+              <th>Order</th>
+              <th>Customer</th>
+              <th>Address</th>
+              <th>Change Order</th>
+              <th>Remove</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for customer in customers %}
+              <tr>
+                <td>
+                  <b>{{forloop.counter}}</b>
+                </td>
+                <td>
+                  <a href="{% url 'staff:edit_customer' pk=customer.pk %}">{{customer.first_name}} {{customer.last_name}}</a>
+                </td>
+                <td>
+                  {{customer.address}}
+                </td>
+                <td>
+                  <a id="up" class="btn btn-primary up" href="{% url 'routes:move_customer' route_number=route_num index=forloop.counter0 direction='up' %}"><i class="fa-solid fa-chevron-up"></i></a>
+                  <a id="down" class="btn btn-primary down" href="{% url 'routes:move_customer' route_number=route_num index=forloop.counter0 direction='down' %}"><i class="fa-solid fa-chevron-down"></i></a>
+                </td>
+                <td>
+                  <a id="remove" style="color:red" class="btn btn-default btn-outline-dark remove" href="{% url 'routes:remove_customer_from_route' route_number=route_num customer_pk=customer.pk%}" onclick="return confirm('Are your sure you would like to remove this customer from this route?')"><i class="fa-solid fa-xmark"></i></a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td>No one is assigned</td><td></td><td></td><td></td><td></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          </table>
+      </div>
+      {% if not isBonusRoute %}
+      <form method="post" class="post-form">
+        {% csrf_token %}
+        <div class="row">
+          {{add_customer_form.media}}
+            <div class="col-md-12 mb-0">
+              {{ add_customer_form.customer|as_crispy_field }}
+              <p>*Customers on this route are omitted from choices.</p>
+            </div>
+            <div class="col-md-0 mb-0" hidden disabled>
+              {{ add_customer_form.route|as_crispy_field }}
+            </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 mb-0">
+            <button type="submit" id="add_customer_buton" name="add_customer_form" class="btn btn-primary">Add Customer</button>
+          </div>
+      </div>
+      </form>
+      {% endif %}
+  </div>
+  <div class="col-md-6 col-sm-12">
+      <div id="map-canvas" style="height: 500px; width: 95%; text-align: right; display: inline-block;"></div>
+  </div>
+  </div>
+</div>
+<div class="text-center pb-4">
+    <div style="width: 95%; display: inline-block;">
+        <div id="directions-panel" style="height: 100%; width: 100%; text-align: left;"></div>
+    </div>
+</div>
+<!-- Assignments table -->
+<div class="container pb-3 pt-1 mb-5">
+
+  <div class="accordion shadow" id="accordion" role="tablist" aria-multiselectable="true">
+    <div class="accordion-item">
+      <div class="panel-heading" role="tab" id="Assignment_heading">
+      <h4 class="accordion-header">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" aria-controls="{{job_type}}" data-bs-target="#Assignments" aria-expanded="true">
+            Assignments
+          </button>
+      </h4>
+      </div>
+      <div id="Assignments" class="accordion-collapse collapse show" aria-labelledby="Assignments">
+        <div class="accordion-body" id="assignemnts-table">
+          <div class="pull-right">
+            <a href="#" class="btn btn-default btn-outline-dark" id="email-shown-vols-button" style="visibility: hidden;"><i class="fa-solid fa-envelope"></i> Email shown volunteers</a>
+          </div>
+          <br/>
+          <div style="text-align: center;">
+              <h3>Manage Assignments</h3>
+              <div style="width: 33%; margin-left: 33%; padding-bottom: 1%;" id="filterDiv" hidden>
+                  <p style="display: inline-block; padding-right: 1%;">Filter:</p>
+                  <input style="display: inline-block; width: 80%;" id="search" class="form-control" placeholder="None"/>
+                  <small style="visibility: hidden;" id="multiple-filter-note">Separate multiple filters with: &&</small>
+              </div>
+          </div>
+          <div id="assignments"><h4>Loading assignments. This may take a few seconds<span id='periods'>.</span></h4></div>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item mt-3">
+      <div class="panel-heading" role="tab" id="Route_heading">
+      <h4 class="accordion-header">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" aria-controls="{{job_type}}" data-bs-target="#Route" aria-expanded="true">
+            {{ isBonusRoute|yesno:"Bonus,"}}Route Details
+          </button>
+      </h4>
+      </div>
+      <div id="Route" class="accordion-collapse collapse show" aria-labelledby="Route">
+        <div class="accordion-body">
+          {% if route_form.errors %}
+              {% for field in route_form %}
+                  {% for error in field.errors %}
+                      <div class="alert alert-danger">
+                          <strong>{{ error|escape }}</strong>
+                      </div>
+                  {% endfor %}
+              {% endfor %}
+              {% for error in route_form.non_field_errors %}
+                  <div class="alert alert-danger">
+                      <strong>{{ error|escape }}</strong>
+                  </div>
+              {% endfor %}
+          {% endif %}
+          <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
+          <form method="post" class="post-form">
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col-md-6 mb-0">
+                  {{ route_form.name|as_crispy_field }}
+                </div>
+                <div class="col-md-6 mb-0">
+                    {{ route_form.num_vols_required|as_crispy_field }}
+                </div>
+            </div>
+            <!-- Hidden for now -->
+                <!-- <div class="form-row">
+                    <div class="col-md-12 mb-0">
+                        <p><strong>Job Recurrence*</strong></p>
+                        {{ route_form.media }}
+                        {{ route_form.recurrence }}
+                    </div>
+                </div> -->
+                <div class="row mb-3">
+                    <div class="col-md-12 mb-0">
+                        {{ route_form.number|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-12 mb-0">
+                        {{ route_form.description|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="col-md-12 mb-0">
+                  {{ route_form.family_friendly_route|as_crispy_field }}
+                </div>
+              <div class="row ml-1 my-3">
+                <div class="col-12">
+                  <button type="submit" name="route_form" class="btn btn-primary save-btn">Save</button>
+                  <a class="btn btn-default btn-outline-dark ms-3 btn-cancel" href="{% url 'staff:delete_job' pk=jobPk %}" onclick="return confirm('Are you sure? Deleting this route will delete all assignments and substitutions associated with it. Also, all customers will be no longer assigned to it.')">Delete This Route</a>
+                </div>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+parsed = {};
+parsed["order"] = '0';
+parsed["lat"] = parseFloat('{{ MOW_LAT }}');
+parsed["lon"] = parseFloat('{{ MOW_LON }}');
+locs.push(parsed)
+</script>
+{% for person in customers %}
+    <script>
+        parsed = {};
+        parsed["order"] = '{{ forloop.counter }}';
+        parsed["lat"] = parseFloat('{{ person.lat }}');
+        parsed["lon"] = parseFloat('{{ person.lon }}');
+
+        locs.push(parsed);
+        rt_length += 1;
+        ordered[parseInt('{{ forloop.counter0 }}')] = {
+          first_name: '{{ person.first_name }}',
+          last_name: '{{ person.last_name }}',
+          address: '{{ person.address }}',
+          route_order: '{{ forloop.counter0 }}',
+          pk: '{{person.pk}}'
+        }
+    </script>
+{% endfor %}
+<!-- https://stackoverflow.com/questions/36523773/how-to-make-route-direction-between-multiple-markers/36524085 -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{API_KEY}}"></script>
+<script type="text/javascript">
+
+  function calculate() {
+  var request = {
+    origin: origin,
+    waypoints: waypts,
+    destination: destination,
+    travelMode: google.maps.TravelMode.DRIVING
+  };
+  directionsDisplay.setPanel(document.getElementById('directions-panel'));
+  directionsService.route(request, function(response, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+    }
+    else {console.log("error");}
+  });
+}
+
+// global variables
+var origin = null;
+var destination = null;
+var waypts = [];
+var infowindow = new google.maps.InfoWindow();
+var directionsDisplay = new google.maps.DirectionsRenderer();
+var directionsService = new google.maps.DirectionsService();
+var features_added = 0;
+
+function initialize() {
+  // Create a simple map.
+  features = [];
+  map = new google.maps.Map(document.getElementById('map-canvas'), {
+          zoom: 9,
+          center: {
+              lat: 38.0293,
+              lng: -78.4767
+            }
+  });
+
+  directionsDisplay.setMap(map);
+  directionsDisplay.setPanel(document.getElementById('directions-panel'));
+  google.maps.event.addListener(map, 'click', function() {
+    infowindow.close();
+  });
+  // process the loaded GeoJSON data.
+  google.maps.event.addListener(map.data, 'addfeature', function(e) {
+    if (e.feature.getGeometry().getType() === 'Point') {
+      features_added++;
+      map.setCenter(e.feature.getGeometry().get());
+      // set the origin to the first point
+      if (!origin) origin = e.feature.getGeometry().get();
+      // set the destination to the second point
+      else waypts.push({
+        location: e.feature.getGeometry().get(),
+        stopover: true
+      });
+      setTimeout(function() {
+        features_added--;
+        if (features_added <= 0) google.maps.event.trigger(map, 'data_idle');
+      }, 500);
+    }
+  });
+  google.maps.event.addListenerOnce(map, 'data_idle', function() {
+    if (!destination) {
+      destination = waypts.pop();
+      destination = destination.location;
+      // calculate the directions once both origin and destination are set
+      calculate();
+    }
+  });
+  map.data.addGeoJson(data);
+}
+google.maps.event.addDomListener(window, 'load', initialize);
+
+var data = {
+    "type": "FeatureCollection",
+    "features": []
+};
+
+for (index = 0; index < locs.length; index++) {
+    feature = {};
+    feature["type"] = "Feature";
+    var lng = locs[index]["lon"];
+    var lat = locs[index]["lat"];
+    feature["geometry"] = {
+        "type": "Point",
+        "coordinates": [
+            lng,
+            lat
+        ]
+    };
+    feature["properties"] = {
+        "prop0": "value" + index
+    };
+    data["features"][locs[index]["order"]] = feature;
+};
+
+</script>
+<script>
+    function moveCustomer(rt_order, direction) {
+        $.post('move-customer/', {'route': rt_num, 'index': rt_order, 'direction': direction, csrfmiddlewaretoken: '{{ csrf_token }}' })
+        $(document).ajaxSuccess(function() {
+            window.location.reload(true);
+        });
+    }
+</script>
+<script src="{% static 'staff/TableSearch.js' %}"></script>
+<script type="text/javascript">
+    var request_url = '{{url}}'
+</script>
+<script src="{% static 'staff/AssignmentTableFunctions.js' %}"></script>
+
+<script>
+  if({{ isBonusRoute|yesno:"true,false" }}) {
+    document.getElementById('bonusPantryNotice').hidden = false
+    upButtons = document.getElementsByClassName('up')
+    downButtons = document.getElementsByClassName('down')
+    removeButtons = document.getElementsByClassName('remove')
+    Array.from(upButtons).forEach(anchorTag => {
+      anchorTag.className = "btn btn-primary down disabled"
+      anchorTag.tabIndex="-1"
+    });
+    Array.from(downButtons).forEach(anchorTag => {
+      // anchorTag.style = "pointer-events: none"
+      anchorTag.className = "btn btn-primary down disabled"
+
+      anchorTag.tabIndex="-1"
+    });
+    Array.from(removeButtons).forEach(anchorTag => {
+      anchorTag.className = "btn btn-default btn-outline-dark disabled"
+      anchorTag.tabIndex="-1"
+    });
+  }
+</script>
+
+{% endblock %}

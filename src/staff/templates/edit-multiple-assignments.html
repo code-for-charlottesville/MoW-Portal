@@ -1,0 +1,77 @@
+{% extends 'navbar_staff.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<style>
+    /* https://stackoverflow.com/questions/51255700/modifying-css-on-django-autocomplete-light-3-1-3 */
+    .select2-container {
+        width: 100% !important;
+    }
+    .lbl {
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+    .days-list .form-group {
+        flex: 1 0 0%; 
+    }
+    .form-group > div {
+        cursor: pointer;
+    }
+</style>
+<div class="container" style="padding-bottom: 3%;">
+    <div style="text-align: center;">
+        <h1>Edit Assignments</h1>
+    </div>
+    {% if form.errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
+        <form style="padding-top: 1%;" id="form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- For now -->
+            {{form.media}}
+            <div class="form-group">
+                <label class="lbl" style="display: inline-block;">Job</label>
+                <input value="{{job.name}}" class="form-control" disabled/>
+            </div>
+            {% if isBonusRoute %}
+            This is a Bouns Pantry Route, days cannot be edited here
+            {% else %}
+            <div class="row">
+                <label class="float-start col-xs-12 lbl my-3">Select day(s) to edit</label>
+                <span class="clearfix"></span>
+                {% for field in form %}
+                    {% if field.name != 'volunteer' %}
+                        {% if field.name in start_column_fields %}
+                            <div class="col-xs-2 row mb-3 days-list">
+                        {% endif %}
+                            {{field|as_crispy_field}}
+                        {% if field.name in end_column_fields %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="form-group" style="padding-bottom: 2%;">
+                <label class="lbl" style="display: block;">Volunteer</label>
+                {{ form.volunteer }}
+                <!-- id_substitue -->
+                <p>Leave this field blank for Open Job.</p>
+            </div>
+            <button type="submit" id="edit-assignments" value="edit_assignments" name="edit_assignments" class="btn btn-primary">Edit Assignment(s)</button>
+            <button style="margin-left: 3%" types="submit" id="delete-assignments" value="delete_assignments" name="delete_assignments" class="btn btn-default btn-outline-dark" onclick="return confirm('Are you sure you want to delete? All associated substitutions will also be deleted.')"><span style="color:red;" class="fa-solid fa-x" aria-hidden="true"></span> Delete Assignment(s)</button>
+        </form>
+</div>
+{% endblock %}

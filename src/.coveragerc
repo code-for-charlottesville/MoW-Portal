@@ -1,0 +1,8 @@
+[report]
+exclude_lines =
+    username = self.cleaned_data
+    return self.name
+
+omit = 
+    legacy/models.py
+    staff/views/reports.py

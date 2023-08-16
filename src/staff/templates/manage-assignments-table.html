@@ -1,0 +1,52 @@
+<div class="table-responsive">
+    <table id="managementTable" class="table table-hover table-condensed">
+        <thead>
+            <tr>
+                <td class="col-md-3">
+                    <h4 id="names" style="cursor: pointer;" onclick="sortRows('managementTable','names', 1, 0)">Volunteer <i class="fa-solid fa-sort"></i></h4>
+                </td>
+                <td class="col-md-3" style="text-align: center;">
+                    <h4 id="jobs" style="cursor: pointer;" onclick="sortRows('managementTable', 'jobs', -1, 1)">Job <i class="fa-solid fa-sort"></i></h4>
+                </td>
+                <td class="col-md-6" style="text-align: center;">
+                    <h4>Assignment(s)</h4>
+                </td>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in rows %}
+            <tr>
+                <td class="col-md-3">
+                    {% if row.volunteer %}
+                        <a href="{% url 'staff:edit_volunteer' row.volunteer.pk%}" title="view volunteer detail">{{row.volunteer}}</a>
+                    {% else %}
+                        <a style="text-decoration: none; color: black; font-weight: bold;">{{open_job}}</b></a>
+                    {% endif %}
+                    <a style="color: black; text-decoration: none;" hidden>{% if row.volunteer %}{{row.volunteer.user.email}}{% endif %}</a>
+                </td>
+                <td class="col-md-3" style="text-align: center;">
+                    {% if row.route_number != -1%}
+                        <a href="{% url 'routes:view_route' row.route_number %}" title="view/edit route">{{row.job.name}}</a>
+                    {% else %}
+                        <a href="{% url 'staff:edit_job' row.job.pk %}" title="edit job">{{row.job.name}}</a>
+                    {% endif %}
+                    <span hidden>{{row.route_number}}</span>
+                </td>
+                <td class="col-md-6" style="text-align: center;">
+                    <!-- searching -->
+                    {% for assignment in row.hidden_assignments %}
+                        <a hidden>{{assignment}}</a>
+                    {% endfor %}
+                    {% if row.volunteer %}
+                        <a href="{% url 'staff:edit_multiple_assignments' job_pk=row.job.pk vol_pk=row.volunteer.pk %}">{{row.visible_assignments}}</a>
+                    {% else %}
+                        <a href="{% url 'staff:edit_multiple_assignments' job_pk=row.job.pk %}">{{row.visible_assignments}}</a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td class="col-md-3">Nothing to display.</td><td class="col-md-3"></td><td class="col-md-3"></td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

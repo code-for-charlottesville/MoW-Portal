@@ -1,0 +1,32 @@
+<h3>Hello New Volunteer!</h3>
+
+ 
+<p>Welcome to Meals on Wheels of Charlottesville/Albemarle! Your references have been checked and you are 
+    ready to start volunteering. The link below will take you to our portal where you can request a substitute 
+    at least 48 hours before your regularly assigned route, allow you to pick up a substitute route, and will 
+    also allow you to see where routes are located.</p>
+
+<p>portal.cvillemeals.org</p>
+
+<p> Your username is "{{user.username}}". </p>
+
+    
+<p><strong>Please follow the link below to reset your password in order to log in to the portal.</strong> 
+    If you have any questions, please contact: volunteer@cvillemeals.org or call 434-293-4364.</p>
+
+{% block reset_link %}
+    {{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
+{% endblock %}
+
+ 
+<p>Thank you and we look forward to working with you!</p>
+
+ 
+
+<p>Meals on Wheels of Charlottesville/Albemarle Team</p>
+
+ 
+
+ 
+
+<p><em>Thank you all for your hard work, we very much appreciate it!</em></p>

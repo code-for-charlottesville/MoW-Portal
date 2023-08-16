@@ -1,0 +1,39 @@
+/*label_pdf.html*/
+
+body {
+    color: black;
+    font-size: 18px;
+    font-family: Arial, Helvetica, sans-serif;
+    float: none;
+}
+
+.num {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+table {
+    width: 100%;
+    font-size: 15px;
+}
+
+.floatedTable {
+    float: none;
+}
+
+th, td {
+    text-align: left;
+    padding: 20px;
+}
+
+@page {
+    size: 8.5in 11in; /*A4 Standard US Page Size*/
+}
+
+tr {
+    page-break-inside: avoid;
+}
+
+td {
+    width: 50%;
+}

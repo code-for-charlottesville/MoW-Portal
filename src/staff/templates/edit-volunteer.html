@@ -1,0 +1,155 @@
+<!-- templates/edit_volunteer.html -->
+{% extends 'navbar_staff.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block title %}Edit Volunteer{% endblock %}
+
+{% block content %}
+{% if user_form.errors %}
+    {% for field in user_form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in user_form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+<style>
+  label {
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  .accordion-button:not(.collapsed), .accordion-button:is(.collapsed) {
+    color: #333;
+    background-color: #f5f5f5;
+    border-color: #ddd;
+    border: none;
+    font-weight: 600;
+    color: rgb(51, 51, 51);
+    font-size: 16px;
+}
+</style>
+<script src="{% static 'staff/TableSort.js' %}"></script>
+<script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
+<div class="container" style="padding-bottom: 2%;">
+  <div class="row">
+      <h2>Edit Volunteer</h2>
+      <hr>
+      <form method="post" class="post-form">
+        {% csrf_token %}
+        <!-- USER DATA FORM -->
+        <div class="row mb-4">
+            <div class="form-group col-md-6">
+              {{ user_form.first_name|as_crispy_field }}
+            </div>
+            <div class="form-group col-md-6">
+              {{ user_form.last_name|as_crispy_field }}
+            </div>
+        </div>
+        <div class="row mb-5">
+          <div class="form-group col-md-4">
+            {{ user_form.username|as_crispy_field }}
+          </div>
+          <div class="form-group col-md-6">
+            {{ user_form.email|as_crispy_field }}
+          </div>
+          <div class="form-group col-md-2 align-self-center mt-sm-4">
+            {{ user_form.is_staff|as_crispy_field }}
+          </div>
+        </div>
+        <hr />
+        <!-- VOLUNTEER DATA FORM -->
+        <div class="row mt-5 mb-4">
+            <div class="form-group col-md-6">
+              {{ form.organization|as_crispy_field }}
+            </div>
+            <div class="form-group col-md-6">
+              {{ addr_form.address|as_crispy_field }}
+              {{ addr_form.media }}
+            </div>
+          </div>
+          <div class="row mb-4">
+              <div class="form-group col-md-4">
+                {{ form.home_phone|as_crispy_field }}
+              </div>
+              <div class="form-group col-md-4">
+                {{ form.cell_phone|as_crispy_field }}
+              </div>
+              <div class="form-group col-md-4">
+                {{ form.work_phone|as_crispy_field }}
+              </div>
+            </div>
+            <div class="row mb-4">
+              <div class="form-group col-md-6">
+                  {{ form.birth_date|as_crispy_field }}
+                </div>
+                <div class="form-group col-md-6">
+                  {{ form.join_date|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row mb-4">
+              <div class="form-group col-md-12">
+                  {{ form.notes|as_crispy_field }}
+              </div>
+            </div>
+            <div class="row mb-4">
+              <div class="form-group col-md-12">
+                  <button type="submit" class="btn btn-primary mybutton">Save</button> 
+              </div>
+            </div>
+        </div>
+      </form>
+  </div>
+</div>
+<!-- Assignments table -->
+<div class="container" style="padding-bottom: 2%; padding-top: .5%;">
+  <!-- https://getbootstrap.com/docs/3.4/javascript/#collapse-example-accordion -->
+  <div class="accordion shadow" id="accordion" role="tablist" aria-multiselectable="true">
+    <div class="accordion-item">
+      <div class="panel-heading" role="tab" id="Assignment_heading">
+      <h4 class="accordion-header">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-parent="" aria-controls="#Assignments" data-bs-target="#Assignments" aria-expanded="true">
+            Assignments
+          </button>
+      </h4>
+      </div>
+      <div id="Assignments" class="accordion-collapse collapse show" role="tabpanel" aria-labelledby="Assignments">
+        <div class="accordion-body" id="assignemnts-table">
+          <div style="text-align: center;">
+              <h3>Manage Assignments</h3>
+              <div style="width: 33%; margin-left: 33%; padding-bottom: 1%;" id="filterDiv" hidden>
+                  <p style="display: inline-block; padding-right: 1%;">Filter:</p>
+                  <input style="display: inline-block; width: 80%;" id="search" class="form-control" placeholder="None"/>
+                  <small style="visibility: hidden;" id="multiple-filter-note">Separate multiple filters with: &&</small>
+              </div>
+          </div>
+          <div id="assignments"><h4>Loading assignments. This may take a few seconds<span id='periods'>.</span></h4></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+    .mybutton{
+      background-color: #333333;
+      border-color: #333333;
+      color: white;
+    }
+    .mybutton:hover{
+      background-color:white;
+      border-color: #333333;
+      border-width: 1px;
+      color: #333333;
+    }
+</style>
+<script src="{% static 'staff/TableSearch.js' %}"></script>
+<script type="text/javascript">
+    var request_url = '{{url}}'
+</script>
+<script src="{% static 'staff/AssignmentTableFunctions.js' %}"></script>
+{% endblock %} 

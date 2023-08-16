@@ -1,0 +1,47 @@
+version: '3.7'
+
+services:
+  web:
+    build: .
+    tty: true
+    command: /bin/bash -c "chmod +x start.sh && /code/start.sh"
+    volumes:
+      - staticvolume:/collected-static
+      - .:/code
+    depends_on:
+      - db
+    networks:
+      - nginx_network
+      - db_network
+      - cron_network
+    environment:
+      - ENV=prod
+    env_file:
+      - .env
+    expose:
+      - 8000
+      - 22
+
+  letsencrypt:
+    build: ./nginx-prod
+    container_name: letsencrypt
+    environment:
+      - PUID=1000
+      - GUID=1000
+      - TZ=America/New_York
+      - URL=portal.cvillemeals.org
+      - VALIDATION=http
+      - EMAIL=awh4kc@virginia.edu
+    volumes:
+      - staticvolume:/collected-static
+      - letsencryptvolume:/config
+    ports:
+      - 443:443
+      - 80:80
+    networks:
+      - nginx_network
+    depends_on:
+      - web
+
+volumes:
+  letsencryptvolume:

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title> Search</title>
+</head>
+<body>
+	<form method="post">
+		{% csrf_token %}
+		{{ form }}
+	<button type="submit">Submit</button>
+	</form>
+	<button id="clickable">Click me</button>
+	<script>
+		document.getElementById("clickable").onclick = function() {test()};
+		function test() {
+			var val = document.getElementById("id_query");
+			console.log(val.value);
+		}
+	</script>
+</body>
+</html>

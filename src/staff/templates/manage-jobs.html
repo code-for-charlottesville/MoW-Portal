@@ -1,0 +1,137 @@
+<!-- templates/welcome-staff.html-->
+{% extends 'navbar_staff.html' %}
+
+{% block title %}Jobs{% endblock %}
+
+{% block content %}
+<style type="text/css" scoped>
+    td { vertical-align: middle !important; text-align: center;}
+    .pencil-class {
+        color: darkgoldenrod;
+    }
+    .pencil-class:hover{
+        color: rgb(209, 197, 23);
+    }
+    label {
+        font-weight: 700;
+    }
+    .top-btns {
+        margin-bottom: 12px;
+    }
+    .accordion-button:not(.collapsed), .accordion-button:is(.collapsed) {
+        color: #333;
+        background-color: #f5f5f5;
+        border-color: #ddd;
+        border: none;
+        font-weight: 600;
+        color: rgb(51, 51, 51);
+        font-size: 16px;
+    }
+
+</style>
+<div class="container pb-5">
+    <div class="float-end mb-4">
+        <a class="btn btn-default btn-outline-dark top-btns" href="{% url 'pdfs:generate_routes_report' date=url_date%}">Generate Routes</a>
+        <a class="btn btn-default btn-outline-dark top-btns" href="{% url 'pdfs:generate_labels' date=url_date%}">Generate Labels</a>
+        <a class="btn btn-default btn-outline-dark top-btns" href="{% url 'pdfs:generate_pet_labels' date=url_date%}">Generate Pet Labels</a>
+        <a class="btn btn-default btn-outline-dark top-btns" href="{% url 'staff:create_job' %}">Create New Job</a>
+    </div>
+    <span class="clearfix"></span>
+    <div class="text-center mb-2">
+        <h2>Manage Jobs</h2>
+        <h4>{{date_display}}</h4>
+        <form role="form" method="POST" class="mx-auto row row-cols-md-auto align-items-center justify-content-center mb-3" action="{% url 'staff:parse_date_form'%}">
+            {% csrf_token %}
+            <div class="col-12">
+                <div class="d-flex justify-content-md-center align-items-center">
+                    <label>Date:</label>
+                    <input name="date" type=date class="form-control mx-2" value="{{date_picker_date}}"/>
+                    <button type="submit" class="btn btn-primary">Go</button>
+                </div>
+            </div>
+        </form>
+        <a class="btn btn-default btn-outline-dark" href="mailto:?bcc={{job_types_struct.email_str}}"><i class="fa-solid fa-envelope"></i> Email all of this Day's Volunteers</a>
+    </div>
+
+    <div class="accordion mt-4 shadow" id="accordion" role="tablist" aria-multiselectable="true">
+        {% for jt in job_types_struct.job_types %}
+        <div class="accordion-item">
+            <div class="panel-heading" role="tab" id="{{jt.job_type.strip_space_in_name}}_heading">
+            <h4 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#{{jt.job_type.strip_space_in_name}}" aria-expanded="true" aria-controls="{{jt.job_type.strip_space_in_name}}">
+                    {{jt.job_type.name}}
+                  </button>
+            </h4>
+            </div>
+            <div id="{{jt.job_type.strip_space_in_name}}" class="accordion-collapse collapse show" aria-labelledby="{{jt.job_type.strip_space_in_name}}">
+                <div class="accordion-body">
+                    <div><a class="btn btn-default btn-outline-dark" href="mailto:?bcc={{jt.email_str}}"><i class="fa-solid fa-envelope"></i> Email this Day's Volunteer(s): {{jt.job_type.name}}</a></div>
+                    <div class="float-end my-3">** denotes volunteering via substitution</div><span class="clearfix"></span>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-condensed">
+                            <thead>
+                                <tr>
+                                    <td class="col-md-4"><h4>Job</h4></td>
+                                    <td class="col-md-4"><h4>Volunteer(s)</h4></td>
+                                    <td class="col-md-4"><h4>Options</h4></td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for j in jt.jobs %}
+                                    <tr>
+                                        {% if j.job.job_type.name == "Route" %}
+                                            <td class="col-md-4">
+                                                <a class="me-3" href="{% url 'routes:view_route' route_number=j.job.route.number%}" title="view route generally">{{j.job.name}}</a>
+                                                <a class="btn btn-primary btn-xs" href="{% url 'routes:view_route_day' route_number=j.job.route.number date=url_date%}">View this Day</a>
+                                            </td>
+                                        {% elif j.job.job_type.name == "Bonus Delivery" %}
+                                            <td class="col-md-4">
+                                                <a class="me-3" href="{% url 'routes:view_route' route_number=j.job.route.number%}" title="view route generally">{{j.job.name}}</a>
+                                                <a class="btn btn-primary btn-xs" href="{% url 'routes:view_route_day' route_number=j.job.route.number date=url_date%}">View this Day</a>
+                                            </td>
+                                        {% else %}
+                                            <td class="col-md-4"><a title="Edit This Job" href="{% url 'staff:edit_job' pk=j.job.pk%}" role="" style="margin-left: 3%; padding-left: 3%; padding-right: 3%;">{{j.job.name}}</a></td>
+                                        {% endif %}
+                                        <td class="col-md-4">
+                                            {% for person in j.todays_volunteers %}
+                                                {% if person.sub_pk %}
+                                                    <!-- this is via substitution -->
+                                                    {% if person.name == open_substitution %}
+                                                        <a href="{% url 'staff:edit_substitution' person.sub_pk %}" title="Edit this Substitution" class="text-decoration-none"><span class="link-danger">{{person.name}} <i class="fa-solid fa-share"></i></span></a><span>{% if not forloop.last %},{% endif %}</span>
+                                                    {% else %}
+                                                        <a href="{% url 'staff:edit_volunteer' pk=person.volunteer_pk %}" title="View Volunteer Detail">{{person.name}}</a><span>**{% if not forloop.last %},{% endif %}</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <!-- not via substitution -->
+                                                    {% if person.name == open_route %}
+                                                        <a href="{% url 'staff:manage_open_job' assignment_pk=person.assignment_pk date=url_date%}" class="text-decoration-none" title="Create Substitution Request" onclick="return confirm('Are you sure you would like to create an open substitution request for {{person.name}} on {{date_display}}?')">{{person.name}}<span class="glyphicon glyphicon-share-alt"></span></a><span>{% if not forloop.last %},{% endif %}</span>
+                                                    {% else %}
+                                                        <!-- This is just a normal assignment -->
+                                                        <a href="{% url 'staff:edit_volunteer' pk=person.volunteer_pk %}" title="View Volunteer Detail" class="text-decoration-none">{{person.name}}</a><span>{% if not forloop.last %},{% endif %}</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% empty %}
+                                                <span>{{unassigned_job}}</span>
+                                            {% endfor %}
+                                        </td>
+                                        {% if j.email_str %}
+                                            <td class="col-md-4"><a class="btn btn-default btn-outline-dark" href="mailto:?bcc={{j.email_str}}" title="Email to {{j.email_str}}" role="button"><i class="fa-solid fa-envelope"></i> Email Volunteer(s)</a></td>
+                                        {% else %}
+                                            <td class="col-md-4"></td>
+                                        {% endif%}
+                                    </tr>
+                                {% empty %}
+                                        <tr><td>Nothing to display.</td><td></td><td></td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <h3>No jobs to display.</h3>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

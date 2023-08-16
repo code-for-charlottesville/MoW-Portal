@@ -1,0 +1,212 @@
+<!-- templates/welcome-staff.html-->
+{% extends 'navbar_staff.html' %}
+
+{% block title %}Create Job{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<style>
+    label {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+  </style>
+<div class="container mb-5 w-75 mx-auto">
+<div class="text-center mb-5">
+    <h1>Create Job</h1>
+</div>
+
+<script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
+
+<form id="initialJobTypeDropDown">
+    {{ jobTypeForm.jobType|as_crispy_field }}
+</form>
+<form method="post" class="post-form" id="job" hidden>
+    {% csrf_token %}
+    {% if job_form.errors %}
+    {% for field in job_form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in job_form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+    <div class="job" >
+        <div >
+            {{ job_form.job_type|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-6 mb-0" id="jobFormNameAppear" >
+            {{ job_form.name|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-6 mb-0">
+            {{ job_form.num_vols_required|as_crispy_field }}
+        </div>
+        <div class="form-row mt-3" id="submit" >
+            <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+    </div>
+    </form>
+    <form method="post" class="post-form" id="route" hidden>
+        {% if route_form.errors %}
+    {% for field in route_form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in route_form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+    <div class="route" >
+        {% csrf_token %}
+        <div >
+            {{ route_form.job_type|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-6 mb-0" id="routeFormNameAppear" >
+            {{ route_form.name|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-6 mb-0">
+            {{ route_form.num_vols_required|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-12 mb-0">
+            {{route_form.number|as_crispy_field}}
+        </div>
+        <div class="form-group col-md-12 mb-0">
+            {{route_form.description|as_crispy_field}}
+        </div>
+        <div class="form-row mt-3" id="submit" >
+            <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+    </div>
+    </form>
+    <form method="post" class="post-form" id="bonusRoute" hidden>
+        
+{% if bonusDeliveryForm.errors %}
+    {% for field in bonusDeliveryForm %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in bonusDeliveryForm.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+    <div  class="bonusRoute">
+        {% csrf_token %}
+        <div >
+            {{ bonusDeliveryForm.job_type|as_crispy_field }}
+    </div>
+        <div class="form-group col-md-6 mb-0" id="routeFormNameAppear">
+            {{ bonusDeliveryForm.name|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-6 mb-0">
+            {{ bonusDeliveryForm.num_vols_required|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-12 mb-0">
+            {{bonusDeliveryForm.number|as_crispy_field}}
+        </div>
+        <div class="form-row" id="bonus_bonusRoute_appear">
+            {{bonusDeliveryForm.bonusRoute|as_crispy_field}}
+    </div>
+    <div class="form-group col-md-12 mb-0">
+        <p><strong>Job Recurrence*</strong></p>
+
+        {{ bonusDeliveryForm.media }}
+        {{ bonusDeliveryForm.recurrence }}
+    </div>
+    <br>
+        <div class="form-group col-md-12 mb-0">
+            {{bonusDeliveryForm.description|as_crispy_field}}
+        </div>
+        <div class="form-row mt-3" id="submit" >
+            <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+        </div>
+    </form>
+
+
+    
+</div>
+{{ job_type|json_script:'job_type' }}
+<script type="text/javascript">
+    
+    // document.getElementById('bonus_route_recurrence').className = 'recurrence-widget'
+    initialJobTypeDropDown = document.getElementById('id_jobType')
+    jobJobTypeDropDown = document.getElementById('job_job_type')
+    routeJobTypeDropDown = document.getElementById('route_job_type')
+    bonusRouteJobTypeDropDown = document.getElementById('bonus_route_job_type')
+
+    const setVisibility = (jobTypeValue) =>{
+        if(jobTypeValue == "{{route_type_pk}}") {
+            document.getElementById("initialJobTypeDropDown").hidden = true
+            document.getElementById("route").hidden = false
+            document.getElementById("job").hidden = true
+            document.getElementById("bonusRoute").hidden = true
+            document.getElementById("route_job_type").value = jobTypeValue
+        } 
+        else if(jobTypeValue == "{{bonusDeliveryPk}}") {
+            document.getElementById("initialJobTypeDropDown").hidden = true
+            document.getElementById("route").hidden = true
+            document.getElementById("job").hidden = true
+            document.getElementById("bonusRoute").hidden = false
+            document.getElementById("bonus_route_job_type").value = jobTypeValue
+        }
+        else if(jobTypeValue == 0) {
+            document.getElementById("initialJobTypeDropDown").hidden = false
+            document.getElementById("route").hidden = true
+            document.getElementById("job").hidden = true
+            document.getElementById("bonusRoute").hidden = true
+            document.getElementById("initialJobTypeDropDown").value = jobTypeValue
+
+        }
+
+        else {
+            document.getElementById("initialJobTypeDropDown").hidden = true
+            document.getElementById("route").hidden = true
+            document.getElementById("job").hidden = false
+            document.getElementById("bonusRoute").hidden = true
+            document.getElementById("job_job_type").value = jobTypeValue
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () =>{
+        document.getElementById("bonus_route_recurrence").required= false
+        console.log(document.getElementById("bonus_route_recurrence").className)
+        document.getElementById("bonus_route_recurrence").class = "recurrence-widget"
+        console.log(document.getElementById("bonus_route_recurrence").className)
+        setVisibility(JSON.parse(document.getElementById('job_type').textContent))
+    })
+
+    initialJobTypeDropDown.addEventListener('change', ()=>{
+        setVisibility(initialJobTypeDropDown.value)        
+    }, false);
+
+    jobJobTypeDropDown.addEventListener('change', () =>{
+        setVisibility(jobJobTypeDropDown.value)
+    }, false)
+
+    routeJobTypeDropDown.addEventListener('change', () =>{
+        setVisibility(routeJobTypeDropDown.value)
+    }, false)
+
+    bonusRouteJobTypeDropDown.addEventListener('change', () =>{
+        setVisibility(bonusRouteJobTypeDropDown.value)
+    }, false)
+
+</script>
+{% endblock %}

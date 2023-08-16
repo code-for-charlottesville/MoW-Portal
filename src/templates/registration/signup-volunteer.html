@@ -1,0 +1,101 @@
+<!-- templates/registration/signup.html -->
+{% extends 'base.html' %}
+
+{% block title %}Sign Up{% endblock %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<style>
+  .mybutton{
+    background-color: #333333;
+    border-color: #333333;
+    color: white;
+  }
+  .mybutton:hover{
+    background-color:white;
+    border-color: #333333;
+    border-width: 1px;
+    color: #333333;
+  }
+  .well {
+    min-height: 20px;
+    padding: 19px;
+    margin-bottom: 20px;
+    background-color: #f5f5f5;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+  }
+  .btn-sm {
+    max-width: 62px;
+  }
+  .control-label {
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  @media screen and (max-width: 768px) {
+    .brand-container {
+      margin: 0 auto;
+    }
+  }
+</style>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header ps-3 brand-container">
+      <a class="navbar-brand brand-center" href="/">Meals on Wheels</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container mx-auto" align="center">
+    <h2>Volunteer Sign Up</h2>
+    <hr>
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2 well" align="left">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-row mb-3">
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.organization|as_crispy_field }}
+                </div>
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.address|as_crispy_field }}
+                </div>
+              </div>
+              <div class="form-row mb-3">
+                  <div class="form-group col-md-4 mb-0">
+                    {{ form.home_phone|as_crispy_field }}
+                  </div>
+                  <div class="form-group col-md-4 mb-0">
+                    {{ form.cell_phone|as_crispy_field }}
+                  </div>
+                  <div class="form-group col-md-4 mb-0">
+                    {{ form.work_phone|as_crispy_field }}
+                  </div>
+                </div>
+                <div class="form-row mb-3">
+                  <div class="form-group col-md-6 mb-0">
+                      {{ form.birth_date|as_crispy_field }}
+                    </div>
+                    <div class="form-group col-md-6 mb-0">
+                      {{ form.join_date|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="form-row mb-3">
+                    {{ form.notes|as_crispy_field }}
+                </div>
+                <button type="submit" class="btn btn-primary mybutton">Sign Up</button> 
+            </div>
+                  
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

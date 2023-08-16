@@ -1,0 +1,85 @@
+<!-- templates/manage-volunteers.html-->
+{% extends 'navbar_staff.html' %}
+
+{% block title %}Volunteers{% endblock %}
+
+{% block content %}
+{% load static %}
+<script src="{% static 'staff/TableSort.js' %}"></script>
+<style type="text/css" scoped>
+    td { vertical-align: middle !important; text-align: center;} 
+    .pencil-class {
+        color: darkgoldenrod;
+    }
+    .pencil-class:hover{
+        color: rgb(209, 197, 23);
+    }
+</style>
+<div class="container mb-5">
+    <div class="float-end">        
+        <a href="#" class="btn btn-default btn-outline-dark" id="email-shown-vols-button" style="visibility: hidden;">
+            <i class="fa-solid fa-envelope"></i>
+            Email shown volunteers</a>
+    </div>
+    <span class="clearfix"></span>
+    <div class="text-center">
+        <h2>Manage Volunteers</h2>
+        <div style="width: 33%; margin-left: 33%; padding-bottom: 1%;" id="filterDiv">
+            <p style="display: inline-block; padding-right: 1%;">Filter:</p>
+            <input style="display: inline-block; width: 80%;" id="search" class="form-control" placeholder="None"/>
+            <small style="visibility: hidden;" id="multiple-filter-note">Separate multiple filters with: &&</small>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table id="managementTable" class="table table-hover table-condensed">
+            <thead>
+                <tr>
+                    <td id="names" style="text-align: left; cursor: pointer;" class="col-md-3" onclick="sortRows('managementTable', 'names', -1, 0)"><h4>Volunteer <i class="fa-solid fa-sort"></i></h4></td>
+                    <td id="last_job" style="text-align:left; cursor: pointer;" class="col-md-3" onclick="sortRows('managementTable', 'last_job', -1, 1)"><h4>Last job <i class="fa-solid fa-sort"></i></h4></td>
+                    <td class="col-md-3"><h4>Cell</h4></td>
+                    <td class="col-md-3"><h4>Email</h4></td>
+                    <td class="col-md-3"><h4>Delete</h4></td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+            {% for v in vols %}
+                    <td class="col-md-3" style="text-align: left;"> 
+                        <a title="edit this volunteer" href="{% url 'staff:edit_volunteer' v.id %}" role="">
+                            {{v}}
+                        </a>
+                    </td>
+                    <td class="col-md-3" style="text-align: left;">
+                        <a>{{ v.record__date__max }}</a>
+                    </td>
+                    <td class="col-md-3"><a style="color: black; text-decoration: none;">{{v.cell_phone}}</a></td>
+                    <td class="col-md-3">
+                        <a title="email this volunteer" href="mailto:{{v.user.email}}" role="">
+                            {{v.user.email}}
+                        </a>
+                    </td>
+                    <td class="col-md-3">
+                    <a class="btn btn-default btn-outline-dark" href="{% url 'staff:delete_volunteer' v.id %}" title="delete this volunteer" role="button" onclick="return confirm('Are you sure you want to delete this volunteer? This action cannot be undone. All of the assignments and substitutions this volunteer had will be set to Open Job.')"><span style="color:red;" class="fa-solid fa-x" aria-hidden="true"></span>
+                            Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <td>Nothing to display.</td><td></td><td></td><td></td>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+</div>
+<script src="{% static 'staff/TableSearch.js' %}"></script>
+<script type="text/javascript">
+    var getShownVolEmail = (row) =>{
+        /*
+        row = <tr> to extract email from
+        */
+        // grab the email out of the row
+        // in this case it is the 3rd col
+        return row.getElementsByTagName('td')[2].getElementsByTagName('a')[0].innerHTML.trim()
+    }
+</script>
+<script src="{% static 'staff/RowExtractAndListener.js' %}"></script>
+{% endblock %} 

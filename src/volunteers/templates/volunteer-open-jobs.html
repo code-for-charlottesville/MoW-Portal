@@ -1,0 +1,72 @@
+<!-- templates/welcome-staff.html-->
+{% extends 'navbar_volunteer.html' %}
+
+{% block title %}Welcome Volunteer{% endblock %}
+
+{% block content %}
+
+{% csrf_token %}
+
+<script type="text/javascript">
+
+function post_substitute_fill(sub_pk, is_family_friendly = true, method='post') {
+  var path = "{% url 'volunteers:take_substitution' %}";
+  
+  // var familyFreindlyConf 
+  if (!is_family_friendly) {
+    var conf_family_friendly = confirm("This job is not family friendly! Are you sure you want to take this job?");
+    if (conf_family_friendly == false) return; 
+  }
+  else {
+    var conf = confirm("Are you sure you want to take this job?");
+    if(conf == false) return;
+  }
+  var params = { 
+                'csrfmiddlewaretoken': "{{ csrf_token }}", 
+                'pk':sub_pk 
+              };
+  const form = document.createElement('form');
+  form.method = method;
+  form.action = path;
+  for (const key in params) {
+    if (params.hasOwnProperty(key)) {
+      const hiddenField = document.createElement('input');
+      hiddenField.type = 'hidden';
+      hiddenField.name = key;
+      hiddenField.value = params[key];
+      form.appendChild(hiddenField);
+    }
+  }
+  document.body.appendChild(form);
+  form.submit();
+}
+
+</script>
+
+<div class="container" style="padding-bottom: 5%;">
+    <center><h1> Open Jobs </h1></center>
+
+    </br></br>
+        <table class="table" style="width:100%; font-size:medium">
+      <tr>
+        <th>Job</th>
+        <th>Date</th>
+        <th> </th>
+      </tr>
+      {% for job, date, date_url, is_route, sub_pk in subs %}
+          <tr>
+            <td>
+            {% if is_route %}
+              <a href="{% url 'routes:view_route_day' route_number=job.route.number date=date_url%}">{{job}}</a>
+            {% else %}
+              {{job}}
+            {% endif %}
+            <td>{{date}}</td>
+            <td><button type="button" class="btn btn-default btn-outline-dark" onclick="post_substitute_fill({{sub_pk}}, {{job.route.family_friendly_route|lower}});">Fill Substitution</button></td>
+          </tr>
+      {% empty %}
+          <td>There are no open substitutions to display.</td><td></td><td></td><td></td>
+      {% endfor %}
+    </table>
+</div>
+{% endblock %}

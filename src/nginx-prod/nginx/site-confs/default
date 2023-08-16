@@ -1,0 +1,37 @@
+upstream hello_server {
+	server web:8000;
+}
+
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+	server_name _;
+	return 301 https://$host$request_uri;
+}
+
+server {
+
+	listen 443 ssl;
+	server_name portal.cvillemeals.org;
+
+	include /config/nginx/ssl.conf;
+
+	client_max_body_size 0;	
+
+	location /static/ {
+		alias /collected-static/;
+	}
+	location / {
+		proxy_pass http://hello_server;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $scheme;
+		proxy_set_header Host $http_host;
+		proxy_set_header Authorization $http_authorization;
+		proxy_pass_header Authorization;
+		proxy_redirect off;
+	}
+}
+
+include /config/nginx/proxy-confs/*.subdomain.conf;
+proxy_cache_path cache/ keys_zone=auth_cache:10m;

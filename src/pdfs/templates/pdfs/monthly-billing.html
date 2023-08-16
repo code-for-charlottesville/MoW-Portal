@@ -1,0 +1,73 @@
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <title>Billing Report</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+
+
+<body>
+    {% load route_extras %}
+    <h2 style="text-align: center;">Billing Report</h2>
+    <h5 style="text-align: center;">Generated: {{today|date:'l, M. d, Y'}} at {{today|time:'h:i a'}}</h5>
+    <br>
+
+    <b>
+    <h3 style="text-align: center;">Range: {{begin_date|date}} to {{end_date|date}}</h3>
+    <h3 style="text-align: center;">Total Meals: {{ total }} </h3>
+    </b>
+
+    <br>
+    <br>
+
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Number of Meals</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for date, total_meals in date_meals.items%}
+                <tr>
+                    <td>{{ date }} </td>
+                    <td>{{ total_meals }}</td>
+                </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+    <br>
+    <br>
+<div class="paymentType"> 
+    {% regroup cust_meals by payment_type as payment_type_list %}
+
+        {% for payment_type, reportday_section in payment_type_list %}
+        <h3 style="text-align: center;"> {{ payment_type|getPayment }}:
+            {{ pay_meals|getItem:payment_type }} meals for
+            {{ pay_customers|getItem:payment_type }} clients
+        </h3 style="text-align: center;">
+            <table class="table table-condensed">
+                <thead>
+                    <th class="col-xs-2">Customer</th>
+                    <th class="col-xs-4">Number of Meals</th>
+                    <th class="col-xs-4">Payment</th>
+                    <th class="col-xs-6">Route</th>
+                </thead>
+                <tbody>
+                {% for reportday in reportday_section %}
+                    <tr>
+                        <td>{{ reportday.customer|getCustomer }}</td>
+                        <td>{{ reportday.total_meals }}</td>
+                        <td>{{ reportday.payment_type|getPayment }}</td>
+                        <td>{{ reportday.route_assigned|getRoute }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            <table>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

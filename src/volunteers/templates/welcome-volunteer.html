@@ -1,0 +1,45 @@
+<!-- templates/welcome-staff.html-->
+{% extends 'navbar_volunteer.html' %}
+
+{% block title %}Welcome Volunteer{% endblock %}
+
+{% block content %}
+
+<div class="container mb-5 mx-auto mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-md-offset-2 text-center">
+            <div class="page-header">
+                <h1 class="h1">Announcements</h1>
+            </div>
+
+            {% for alert in alerts %}
+                <h3>{{ alert.announcement }}</h3>
+                Posted {{alert.date_created}}.
+
+            {% empty %}
+                <h4 class="mb-3">There are no announcements.</h4>
+            {% endfor %}
+
+            <hr />
+
+            <div class="page-header mt-3">
+                <h1 class="h1">Substitution Requests</h1>
+            </div>
+            {% for day, sub_reqs in subs.items %}
+            <div class="mb-4 sub-items">
+                <h3><u>{{day}}</u></h3>
+                <!-- {{sub_reqs}} -->
+                {% if sub_reqs %}
+                {% for sub_req in sub_reqs%}
+                <a href="{% url 'volunteers:open_jobs' %}"><h4 class="fs-5">{{sub_req.assignment.job.name}} needs a sub.</h4></a>
+                {% endfor %}
+                {% else %}
+                    <h4 class="fs-5">There are no open substitution requests for this day.</h4>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+<!-- templates/welcome-staff.html-->
+{% extends 'navbar_staff.html' %}
+
+{% block title %}Subs{% endblock %}
+
+{% block content %}
+{% load static %}
+<script src="{% static 'staff/TableSort.js' %}"></script>
+<style type="text/css" scoped>
+    td { vertical-align: middle !important; text-align: center;} 
+    .pencil-class {
+        color: darkgoldenrod;
+    }
+    .pencil-class:hover{
+        color: rgb(209, 197, 23);
+    }
+    .th {
+        font-size: 18px;
+    }
+</style>
+<div class="container mb-5">
+    <div class="float-end">
+        <a class="btn btn-default btn-outline-dark" href="{% url 'staff:create_substitution' %}">Create Substitution</a>
+        <a class="btn btn-default btn-outline-dark" href="{% url 'staff:spawn_open_jobs' %}">Spawn Open Job Substitutions</a>
+    </div>
+    <span class="clearfix"></span>
+    <div class="text-center my-4">
+        <h2>Manage Substitutions</h2>
+        <div id="filterDiv" class="d-flex justify-content-center w-25 mx-auto mb-2">
+            <p class="align-self-center m-0 me-2">Filter:</p>
+            <input id="search" class="form-control" placeholder="None"/>
+        </div>
+        <small style="visibility: hidden; display: inline-block; margin-bottom: 8px;" id="multiple-filter-note">Separate multiple filters with: &&</small>
+        <h6>Displaying Upcoming Substitutions, view reports for historical information</h6>
+    </div>
+    <div class="table-responsive-md">
+        <table id="managementTable" class="table table-hover table-condensed">
+            <thead>
+                <tr>
+                    <td style="text-align: left; cursor: pointer;" id="dates" class="col-md-2" onclick="sortRows('managementTable', 'dates', 1, 0)"><h4 class="th">Day <i class="fa-solid fa-sort"></i></h4></td>
+                    <td class="col-md-2" style="cursor: pointer;" id="jobs" onclick="sortRows('managementTable', 'jobs', 1, 1)"><h4 class="th">Job <i class="fa-solid fa-sort"></i></h4></td>
+                    <td class="class-md-3" style="cursor: pointer;" id="oName" onclick="sortRows('managementTable', 'oName', 1, 2)"><h4 class="th">Original Assignment <i class="fa-solid fa-sort"></i></h4></td>
+                    <td class="col-md-3" style="cursor: pointer;" id="sName" onclick="sortRows('managementTable', 'sName', 1, 3)"><h4 class="th">Substitute <i class="fa-solid fa-sort"></i></h4></td>
+                    <td class="col-md-2"><h4>Options</h4></td>
+                </tr>
+            </thead>
+            <tbody>
+            {% for sub in subs %}
+                {% if not sub.volunteer.user%}
+                    <tr class="alert alert-danger">
+                {% else %}
+                    <tr>
+                {% endif %}
+                    <td class="col-md-2" style="text-align: left;"><a style="text-decoration: none; color: black;">{{sub.date|date:'l, m/d/Y'}}</a></td>
+                    {% if sub.route_number == -1 %}
+                        <td class="col-md-2"><a href="{% url 'staff:edit_job' sub.assignment.job.pk %}">{{sub.assignment.job}}</a><span hidden>{{sub.route_number}}</span></td>
+                    {% else %}
+                        <td class="col-md-2"><a href="{% url 'routes:view_route' sub.route_number %}">{{sub.assignment.job}}</a><span hidden>{{sub.route_number}}</span></td>      
+                    {% endif %}
+                    {% if sub.assignment.volunteer %}
+                        <td class="col-md-3"><a href="{% url 'staff:edit_volunteer' pk=sub.assignment.volunteer.pk %}">{{sub.assignment.volunteer.user.first_name}} {{sub.assignment.volunteer.user.last_name}}</a></td>
+                    {% else %}
+                        <td class="col-md-3"><a style="color: black; text-decoration: none;">{{open_job}}</a></td>
+                    {% endif %}
+                    {% if not sub.volunteer.user %}
+                        <td class="col-md-3"><a style="color: black; text-decoration: none;">OPEN</a><span style="padding-left: 1.5%;"></span><a class="pencil-class" title="edit this substitution" href="{% url 'staff:edit_substitution' sub.id %}" role="" style="padding-left: 5%; padding-right: 5%;"><i class="fa-solid fa-pencil"></i></a></td>
+                    {% else %}
+                        <td class="col-md-3">
+                            <a href="{% url 'staff:edit_volunteer' pk=sub.volunteer.pk %}">{{sub.volunteer.user.first_name}} {{sub.volunteer.user.last_name}}</a>
+                            <span style="padding-left: 1.5%;"></span>
+                            <a class="pencil-class" title="edit this substitution" href="{% url 'staff:edit_substitution' sub.id %}" role="" style="padding-left: 1%; padding-right: 1%;">
+                                <i class="fa-solid fa-pencil"></i>
+                            </a>
+                        </td>
+                    {% endif %}
+                    <td class="col-md-2">
+                        {% if sub.volunteer %}
+                            <a class="btn btn-default btn-outline-dark" href="{% url 'staff:remove_substitute' sub.id %}" title="Remove substitute"><i class="fa-solid fa-eraser"></i> Open</a>
+                        {% endif %}
+                        <a class="btn btn-default btn-outline-dark" href="{% url 'staff:delete_substitution' sub.id %}" title="delete this substitution" role="button" onclick="return confirm('Are you sure you want to delete the subsitution for {{sub.assignment.job}} on {{sub.date}}? The request will have to be resubmitted.')"><span style="color:red;" class="fa-solid fa-x" aria-hidden="true"></span> Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                <td><h4>Nothing to display.</h4><a hidden></a></td>
+                <td><a hidden></a></td><td><a hidden></a></td><td><a hidden></a></td><td></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+</div>
+<script src="{% static 'staff/TableSearch.js' %}"></script>
+<script src="{% static 'staff/RowExtractAndListener.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,24 @@
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  color: black;
+  text-align: center;
+}
+
+@page {
+  size: 8.5in 11in; /*A4 Standard US Page Size*/
+}
+
+@media print {
+  tr {
+      page-break-inside: avoid;
+  }
+}
+
+@media print {
+  .paymentType {
+    page-break-inside: avoid;
+  }
+}

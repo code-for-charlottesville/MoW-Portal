@@ -1,0 +1,173 @@
+<!-- templates/welcome-staff.html-->
+{% extends 'navbar_staff.html' %}
+
+{% block title %}Edit Customer{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mb-5">
+<h1>Edit Customer</h1>
+{% if form.errors %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+<script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
+<style>
+  label {
+    font-weight: bold;
+  }
+  .btn-submit {
+    max-width: 58px;
+  }
+  @media screen and (max-width: 768px) {
+    label {
+      margin-bottom: 8px;
+      margin-top: 8px;
+    }
+  }
+</style>
+<form method="post" class="post-form">
+    {% csrf_token %}
+    <!-- For now -->
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-0">
+          {{ form.first_name|as_crispy_field }}
+        </div>
+        <div class="col-md-4 mb-0">
+          {{ form.last_name|as_crispy_field }}
+        </div>
+        <div class="col-md-3 mb-0">
+          {{ form.birth_date|as_crispy_field }}
+        </div>
+        <div class="col-md-1 mb-0">
+            {{ form.sex|as_crispy_field }}
+        </div>
+     </div>
+
+     <div class="row mb-4">
+        <div class="col-md-3 mb-0">
+          {{ form.phone|as_crispy_field }}
+        </div>
+        <div class="col-md-3 mb-0">
+            {{ addr_form.address|as_crispy_field }}
+            {{ addr_form.media }}
+        </div>
+        <div class="col-md-1 mb-0 align-self-center">
+              {{ form.active|as_crispy_field }}
+        </div>
+        <div class="col-md-1 mb-0 align-self-center">
+          {{ form.receivesBonusPantryDelivery|as_crispy_field }}
+      </div>
+        <div class="col-md-2 mb-0">
+              {{ form.historical_route|as_crispy_field }}
+        </div>
+        <div class="col-md-2 mb-0">
+            {% if customer_route %}
+              <label>Route Assigned</label> <br />
+              <a href="{% url 'routes:view_route' customer_route.number %}" class="btn btn-primary">{{customer_route.name}}</a>
+            {% else %}
+              <label>No Route Assigned</label> <br />
+              <a href="{% url 'staff:manage_jobs' %}" class="btn btn-primary">Manage Jobs</a>
+            {% endif %}
+        </div>
+      </div>
+
+      <div class="row mb-4">
+
+          <div class="col-md-12">
+            <p><strong>Meal Recurrence*</strong></p>
+            {{ rec_form.media }}
+            {{ rec_form.meal_recurrence }}
+
+          </div>
+      </div>
+     
+      <div class="row mb-4">
+          <div class="col-md-3 mb-0">
+              {{ form.num_weekend_meals|as_crispy_field }}
+          </div>
+          <div class="col-md-3 mb-0">
+            {{ form.join_date|as_crispy_field }}
+          </div>
+          <div class="col-md-3 mb-0">
+              {{ form.pays|as_crispy_field }}
+          </div>
+          <div class="col-md-3 mb-0">
+            {{ form.bill_to|as_crispy_field }}
+          </div>
+        </div>
+  
+
+      <div class="row mb-4">
+        <div class="col-md-6 mb-0">
+          {{ form.printed_notes|as_crispy_field }}
+        </div>
+        <div class="col-md-6 mb-0">
+          {{ form.notes|as_crispy_field }}
+        </div>
+      </div>
+      <div class="row mb-4">
+        <div class="col-md-6 mb-0">
+          {{ form.contact|as_crispy_field }}
+        </div>
+        <div class="col-md-3 mb-0">
+          {{ form.contact_phone|as_crispy_field }}
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-md-6 mb-0">
+          {{ form.referred|as_crispy_field }}
+        </div>
+        <div class="col-md-6 mb-0">
+          {{ form.ref_phone|as_crispy_field }}
+        </div>
+      </div>
+      <div class="row mb-4">
+        <div class="col-md-4 mb-0">
+          {{ form.diet|as_crispy_field }}
+        </div>
+        <div class="col-md-4 mb-0">
+          {{ form.cold_diet_restrictions|as_crispy_field }}
+        </div>
+        <div class="col-md-4 mb-0">
+          {{ form.hot_diet_restrictions|as_crispy_field }}
+        </div>
+      </div>
+      <div class="row mb-4">
+        <div class="col-md-6 mb-0">
+          {{ form.pet|as_crispy_field }}
+        </div>
+        <div class="col-md-6 mb-0">
+          {{ form.petfood|as_crispy_field }}
+        </div>
+      </div>
+      <div class="row mb-4">
+        <div class="col-md-6 mb-0">
+          {{ form.end_date|as_crispy_field }}
+        </div>
+        <div class="col-md-6 mb-0">
+          {{ form.end_reason|as_crispy_field }}
+        </div>
+      </div>
+
+      <div class ="row mb-4">
+          <button type="submit" class="btn btn-primary btn-submit">Save</button>
+      </div>
+  </form>
+</div>
+
+{% endblock %}
+

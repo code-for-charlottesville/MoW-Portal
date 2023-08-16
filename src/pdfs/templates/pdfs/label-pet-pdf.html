@@ -1,0 +1,52 @@
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <title>Pet Labels PDF</title>
+     {%  load static  %}
+    <link href="{% static 'pdfs/label_pdf.css' %}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<!-- {% now "F jS Y" %} -->
+    {% load route_extras %}
+    {% if cust_query %}
+        <table class="floatedTable">
+            <tbody>
+                <tr>
+                {% cycle '' '<tr>' as opentr %}
+                {% cycle '</tr>' '' as closetr %}
+
+                {% for customer in cust_query %}
+                    {% if customer.pet_id != null %}
+                        {% cycle opentr %}
+                            <td> <b> {{ customer.route_id|getRoute }} {{ customer.first_name|slice:":11"}} {{ customer.last_name|slice:":11" }} </b>
+                                <br/>
+                                {% for pet in pet_query %}
+                                    {% if pet.id == customer.pet_id %}
+                                        <i> Pet: {{pet.name}} </i> <br/>
+                                    {% endif %}
+                                {% endfor %}
+                                {% for petfood in petfood_query %}
+                                    {% if petfood.id == customer.petfood_id %}
+                                        <i> Pet Food: {{petfood.name}} </i> <br/>
+                                    {% endif %}
+                                {% endfor %}
+                                <br/>
+                                <br/>
+                            </td>
+                        {% cycle closetr %}
+                        {% if forloop.last|divisibleby:2 %}
+                            <!--do nothing-->
+                        {% else %}
+                            </tr>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="no_custs">There are currently no customers.</p>
+    {% endif %}
+
+</body>
+</html>

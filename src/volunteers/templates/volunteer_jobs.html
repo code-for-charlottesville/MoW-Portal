@@ -1,0 +1,93 @@
+<!-- templates/welcome-staff.html-->
+{% extends 'navbar_volunteer.html' %}
+
+{% block title %}Welcome Volunteer{% endblock %}
+
+{% block content %}
+
+{% csrf_token %}
+
+<script type="text/javascript">
+function withinDateWindow(jobDate){
+  var today = new Date();
+  var jobDate = new Date(Date.parse(jobDate));
+  var hourThreshold = 48;
+  var hourDifference = Math.abs(today.getTime() - jobDate.getTime()) / 3600000;
+  return hourDifference < hourThreshold;
+}
+function post_substitute_request(pk, date, is_sub, method='post') {
+  if(withinDateWindow(date)){
+    alert("This job is occuring too soon to request a substitute online. You must request a substitute by calling Meals on Wheels at (434) 293-4364.");
+    return;
+  }
+  var conf = confirm("Are you sure you want to request a substitute for " + date + "? This cannot be undone.");
+  if(conf == false) return;
+  var path = "{% url 'volunteers:request_substitute'%}";
+  var params = {'job_or_sub_pk': pk,
+                'job_is_sub' : is_sub,
+                'job_date' : date,
+                'csrfmiddlewaretoken': "{{ csrf_token }}", 
+              };
+  const form = document.createElement('form');
+  form.method = method;
+  form.action = path;
+  for (const key in params) {
+    if (params.hasOwnProperty(key)) {
+      const hiddenField = document.createElement('input');
+      hiddenField.type = 'hidden';
+      hiddenField.name = key;
+      hiddenField.value = params[key];
+      form.appendChild(hiddenField);
+    }
+  }
+  document.body.appendChild(form);
+  form.submit();
+}
+</script>
+
+<div class="container" style="padding-bottom: 5%;">
+  <div align="right">
+      {% if request.GET.month %}
+        {% if request.GET.month != "0" %}
+          <a href="{% url 'volunteers:my_jobs'%}?month={{request.GET.month|add:-1}}"><button type="button" class="btn btn-default btn-outline-dark">Previous month</button></a>
+        {% endif %}
+          <a href="{% url 'volunteers:my_jobs'%}?month={{request.GET.month|add:1}}"><button type="button" class="btn btn-default btn-outline-dark">Next month</button></a>
+        {% else %}
+      <a href="{% url 'volunteers:my_jobs'%}?month=1"><button type="button" class="btn btn-default btn-outline-dark">Next month</button></a>
+
+      {% endif %}
+    </div>
+    <center><h1> My Jobs for {{month}}, {{year}}</h1></center>
+
+    </br></br>
+        <table class="table" style="width:100%; font-size:medium">
+      <tr>
+        <th>Job</th>
+        <th>Type</th>
+        <th>Date</th>
+        <th> </th>
+      </tr>
+      {% for job, date, date_url, is_sub, is_route, sub_or_assignment_pk in my_jobs %}
+          <tr>
+            <td>
+            {% if is_route %}
+              <a href="{% url 'routes:view_route_day' route_number=job.job.route.number date=date_url%}">{{job.job}}</a>
+            {% else %}
+              {{job.job}}
+            {% endif %}
+
+            {% if is_sub %}
+              <td>Substitution</td>
+            {% else %}
+              <td>Recurring</td>
+
+            {% endif %}
+            <td>{{date}}</td>
+            <td><button type="button" class="btn btn-default btn-outline-dark" onclick="post_substitute_request({{sub_or_assignment_pk}}, '{{date}}', '{{is_sub}}');">Request Substitute</button></td>
+          </tr>
+      {% empty %}
+          <td>There are no jobs to display.</td><td></td><td></td><td></td>
+      {% endfor %}
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+<!-- templates/welcome-staff.html-->
+{% extends 'navbar_staff.html' %}
+
+{% block title %}Date Range Form{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-bottom: 5%;">
+    <h1 style="text-align: center;">Generate {{report_type}}</h1>
+    </br>
+    {% if form.errors %}
+        {% for error in form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+    <form method="post" class="post-form">
+    {% csrf_token %}
+        <div class="form-group w-25 mx-auto mb-3">
+            <label>Begin Date:</label>
+            <input class="form-control" name="begin_date" type="date" value="{{date_reversed}}"/>
+        </div>
+        <div class="form-group w-25 mx-auto mb-3">
+            <label>End Date:</label>
+            <input class="form-control" name="end_date" type="date" value="{{date_reversed}}"/>
+        </div>
+        <div class="form-group" style="text-align: center;">
+            <button type="submit" class="btn btn-primary">Generate</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

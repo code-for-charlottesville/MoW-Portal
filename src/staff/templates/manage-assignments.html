@@ -1,0 +1,32 @@
+<!-- templates/welcome-staff.html-->
+{% extends 'navbar_staff.html' %}
+
+{% block title %}Assignments{% endblock %}
+{% block content %}
+{% load static %}
+<script src="{% static 'staff/TableSort.js' %}"></script>
+<style type="text/css" scoped>
+    td { vertical-align: middle !important;} 
+</style>
+<div class="container" style="padding-bottom: 5%;">
+    <div class="float-end">        
+        <a href="#" class="btn btn-default btn-outline-dark" id="email-shown-vols-button" style="visibility: hidden;"><i class="fa-solid fa-envelope"></i> Email shown volunteers</a>        
+        <a class="btn btn-default btn-outline-dark" href="{% url 'staff:create_recurrence' %}">Create Assignment</a>
+    </div>
+    <span class="clearfix"></span>
+    <div style="text-align: center;">
+        <h2>Manage Assignments</h2>
+        <div style="width: 33%; margin-left: 33%; padding-bottom: 1%;" id="filterDiv" hidden>
+            <p style="display: inline-block; padding-right: 1%;">Filter:</p>
+            <input style="display: inline-block; width: 80%;" id="search" class="form-control" placeholder="None"/>
+            <small style="visibility: hidden;" id="multiple-filter-note">Separate multiple filters with: &&</small>
+        </div>
+    </div>
+    <div id="assignments"><h4>Loading assignments. This may take a few seconds<span id='periods'>.</span></h4></div>
+</div>
+<script src="{% static 'staff/TableSearch.js' %}"></script>
+<script type="text/javascript">
+    var request_url = '{{url}}'
+</script>
+<script src="{% static 'staff/AssignmentTableFunctions.js' %}"></script>
+{% endblock %}

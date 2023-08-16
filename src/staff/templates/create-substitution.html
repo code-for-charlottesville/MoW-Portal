@@ -1,0 +1,67 @@
+{% extends 'navbar_staff.html' %}
+
+{% block title %}Create Substitution{% endblock %}
+
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+<style>
+    /* https://stackoverflow.com/questions/51255700/modifying-css-on-django-autocomplete-light-3-1-3 */
+    .select2-container {
+        width: 100% !important;
+    }
+    label {
+        font-weight: bold;
+    }
+</style>
+<div class="container w-75 mx-auto mb-5">
+    <div style="text-align: center;">
+        <h2>Create Substitution</h2>
+        <p>Assigned Volunteer needs to be specified for jobs with more than one assigned volunteer on the date selected. Otherwise, it will populate itself.</p>
+    </div>
+    {% if form.errors %}
+        {% for error in form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+        <form style="padding-top: 1%;" id="form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.media }}
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    {{ form.job|as_crispy_field }}
+                </div>
+                <div class="form-inline col-md-6">
+                    <label style="display: block;">Date*</label>
+                    <input name="date" id="date_input" value={{date}} style="width: 100%;" type=date class="form-control" required/>
+                </div>
+            </div>
+            <b style="color: red;" id="assignment-warning" hidden>There is no assignment for this job on this date.</b>
+            <div class="form-group mb-4" id="original_vol_div">
+                <label style="display: block;">Assigned Volunteer</label>
+                <select id="a_vol_select" name="assigned_volunteer" class="form-control" readonly>
+                    <option selected>Please select a date and job first.</option>
+                </select>
+                <b id="a_vol_message" hidden>Click the box to select a different option.</b>
+            </div>
+            <div class="form-group">
+                <label style="display: block;">Substitute</label>
+                {{ form.substitute }}
+                <!-- id_substitue -->
+                <p>Leave this field blank to create an open request</p>
+            </div>
+            <p id="sub-exists-warning" style="color: red; font-weight: bold;"></p>
+            <button id="submit" class="btn btn-primary" type="submit">Submit</button>
+        </form>
+</div>
+<script src="{% static 'staff/CreateSub.js' %}"></script>
+{% endblock %} 

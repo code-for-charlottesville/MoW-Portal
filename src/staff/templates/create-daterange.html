@@ -1,0 +1,35 @@
+<!-- templates/edit_volunteer.html -->
+{% extends 'navbar_staff.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Create Date Range Exclusion{% endblock %}
+{% load static %}
+
+{% block content %}
+<style>
+  label {
+    font-weight: bold;
+  }
+</style>
+<div class="container mb-5 w-75 mx-auto">
+  <div style="text-align: center;">
+    <h1>Create Date Range Exclusion</h1>
+  </div>
+    <form method="post">
+      {% csrf_token %}
+      {{form.media}}
+      <div class="form-group mb-3">
+        {{ form.customer|as_crispy_field }}
+      </div>
+      <div class="form-group mb-3">
+        {{ form.start_date|as_crispy_field }}
+      </div>
+      <div class="form-group">
+        {{ form.end_date|as_crispy_field }}
+      </div>
+        <div class="form-group mt-3">
+            <button type="submit" class="btn btn-primary mybutton">Save</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,47 @@
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <title>MOW Daily Count Report</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+
+
+<body>
+    <h1 style="font-weight: bold;">MOW Daily Count Report</h1>
+    <h5>Generated: {{today|date:'l, M. d, Y'}} at {{today|time:'h:i a'}}</h5>
+    <h5>For: {{date|date:'l, M. d, Y'}}</h5>
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th class="col-xs-4"><b>Diet</b></th>
+                <th class="col-xs-8"><b>Count</b></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for diet, code, count in diets %}
+                <tr>
+
+                    <td  style="width:80%">{{diet}} ({{code}})</td>
+                    <td>{{count}}</td>
+                </tr>
+            {% endfor %}
+            {% if no_diet %}
+            <tr>
+                <td>(NO DIET FOUND)</td>
+                <td>{{no_diet}}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>+FROZEN</td>
+                <td>{{frozen}}</td>
+            </tr>
+
+            <tr>
+                <td><b>Total</b></td>
+                <td><b>{{total}}</b></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

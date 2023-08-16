@@ -1,0 +1,44 @@
+{% extends 'navbar_staff.html' %}
+
+{% block title %}Spawn Open Job Substitutions{% endblock %}
+
+{% block content %}
+<style>
+    label {
+        font-weight: bold;
+    }
+</style>
+<div class="container mb-5">
+    <h1 class="text-center">Create Substitution Requests For Open Jobs</h1>
+    </br>
+    {% if form.errors %}
+        {% for error in form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+    <form method="post" class="post-form w-50 mx-auto">
+    {% csrf_token %}
+        <div class="form-group mb-4" style="margin-left: 25%; margin-right: 25%;">
+            <label>Begin Date:</label>
+            <input class="form-control" name="begin_date" type="date" value="{{date}}"/>
+        </div>
+        <div class="form-group mb-4" style="margin-left: 25%; margin-right: 25%;">
+            <label>End Date:</label>
+            <input class="form-control" name="end_date" type="date" value="{{date}}"/>
+        </div>
+        <div class="form-group" style="text-align: center;">
+            <button type="submit" class="btn btn-primary">Create Requests</button>
+            <p style="margin-top: 3%;">Note: Dates are inclusive, and requests won't be duplicated</p>
+        </div>
+    </form>
+</div>
+{% endblock %}

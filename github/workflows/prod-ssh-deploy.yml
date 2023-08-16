@@ -1,0 +1,31 @@
+name: Production Deploy
+on:
+  push:
+    branches:
+      - prod
+  pull_request:
+    types: [closed]
+    branches:
+      - prod
+
+jobs:
+  buildProd:
+    name: build Prod
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd ~/Meals-on-Wheels/src
+            git pull origin prod
+            make down env=prod
+            sleep 10
+            docker network prune
+            make deploy env=prod
+            sleep 10

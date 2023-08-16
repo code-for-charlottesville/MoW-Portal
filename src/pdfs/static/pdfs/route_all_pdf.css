@@ -1,0 +1,42 @@
+/*route_all_pdf.html*/
+
+body {
+    color: Black;
+    font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.num {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+table {
+    width: 100%;
+    font-size: 14px;
+}
+
+@page {
+    size: 8.5in 11in; /*A4 Standard US Page Size*/
+}
+
+@media print {
+   table {
+        page-break-after: always;
+        /* overflow:initial !important;
+        float: none !important; */
+   }
+}
+
+@media print {
+    tr {
+        page-break-inside: avoid;
+    }
+}
+
+
+th, td {
+    text-align: left;
+    padding: 2px;
+    border-bottom: 1px solid #ddd;
+}

@@ -1,0 +1,226 @@
+{% extends navbar %}
+
+{% block title %}Route Detail{% endblock %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+
+<script>
+    var locs = [];
+    var hotfix = [''];
+    var rt_length = 0;
+    var rt_num = parseInt("{{ route_num }}");
+    var ordered = [];
+    hotfix[0] += "https://www.google.com/maps/dir/?api=1";
+    hotfix[0] += "&origin=Meals%20On%20Wheels%20of%20Charlottesville%2FAlbemarle";
+    hotfix[0] += "&destination=Meals%20On%20Wheels%20of%20Charlottesville%2FAlbemarle";
+    hotfix[0] += "&waypoints=";
+</script>
+{% if is_staff %}
+<div class="col-md-12 pe-4 text-center">
+    <form role="form" method="POST" class="row row-cols-lg-auto col-md-3 col-sm-12 align-items-center ms-auto" action="{% url 'routes:parse_date_form' route_number=route_num%}">
+      {% csrf_token %}
+      <div class="input-group ms-auto">
+          <label class="align-self-center fw-bold me-3">View Specific Day: </label>
+          <input name="date" type=date class="form-control me-3"  value="{{date_picker_date}}"/>
+          <button type="submit" class="btn btn-primary">Go</button>
+      </div>
+  </form>
+</div>
+{% endif %}
+<div style="width: 100%; text-align: center;">
+  <div class="text-center pb-4 mt-4">
+    <h1>{{route_name}}</h1>
+    <h3>{{date_display}}</h3>
+  </div>
+  <div class="row">
+    <div class="col-md-6 col-sm-12">
+      <div id="cust_list" style="width: 95%; text-align: center; display: inline-block;">
+        <table class='table table-hover'>
+          <thead>
+            <tr>
+              <th>Order</th>
+              <th>Customer</th>
+              <th>Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for customer in customers %}
+              <tr>
+                <td>
+                  <b>{{forloop.counter}}</b>
+                </td>
+                <td>
+                  {% if is_staff %}
+                    <a href="{% url 'staff:edit_customer' pk=customer.pk %}">{{customer.first_name}} {{customer.last_name}}</a>
+                  {% else %}
+                    {{customer.first_name}} {{customer.last_name}}
+                  {% endif %}
+                </td>
+                <td>
+                  {{customer.address}}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td>No one is assigned</td><td></td><td></td><td></td><td></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          </table>
+      </div>
+  </div>
+  <div class="col-md-6 col-sm-12">
+      <div id="map-canvas" style="height: 500px; width: 95%; text-align: right; display: inline-block;"></div>
+      <div id="open_in_maps_button" class="btn btn-primary" onclick="open_in_maps();" style="display:none">Open in Google Maps</div>
+  </div>
+  </div>
+</div>
+<div style="text-align: center; padding-bottom: 3%;">
+    <div style="width: 95%; display: inline-block;">
+        <div id="directions-panel" style="height: 100%; width: 100%; text-align: left;"></div>
+    </div>
+</div>
+
+</div>
+<script>
+parsed = {};
+parsed["order"] = '0';
+parsed["lat"] = parseFloat('{{ MOW_LAT }}');
+parsed["lon"] = parseFloat('{{ MOW_LON }}');
+locs.push(parsed)
+</script>
+{% for person in customers %}
+    <script>
+        parsed = {};
+        parsed["order"] = '{{ forloop.counter }}';
+        parsed["lat"] = parseFloat('{{ person.lat }}');
+        parsed["lon"] = parseFloat('{{ person.lon}}');
+        
+        hotfix[0] += parsed["lat"];
+        hotfix[0] += "%2C";
+        hotfix[0] += parsed["lon"];
+        hotfix[0] += "%7C";
+
+        locs.push(parsed);
+        rt_length += 1;
+        ordered[parseInt('{{ forloop.counter0 }}')] = {
+          first_name: '{{ person.first_name }}',
+          last_name: '{{ person.last_name }}',
+          address: '{{ person.address }}',
+          route_order: '{{ forloop.counter0 }}',
+          pk: '{{person.pk}}'
+        }
+    </script>
+{% endfor %}
+<!-- https://stackoverflow.com/questions/36523773/how-to-make-route-direction-between-multiple-markers/36524085 -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{API_KEY}}"></script>
+<script type="text/javascript">
+
+  function calculate() {
+  var request = {
+    origin: origin,
+    waypoints: waypts,
+    destination: destination,
+    travelMode: google.maps.TravelMode.DRIVING
+  };
+  directionsDisplay.setPanel(document.getElementById('directions-panel'));
+  directionsService.route(request, function(response, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+    }
+    else {console.log("error");}
+  });
+}
+
+// global variables
+var origin = null;
+var destination = null;
+var waypts = [];
+var infowindow = new google.maps.InfoWindow();
+var directionsDisplay = new google.maps.DirectionsRenderer();
+var directionsService = new google.maps.DirectionsService();
+var features_added = 0;
+
+function initialize() {
+  // Create a simple map.
+  features = [];
+  map = new google.maps.Map(document.getElementById('map-canvas'), {
+          zoom: 9,
+          center: {
+              lat: 38.0293,
+              lng: -78.4767
+            }
+  });
+
+  directionsDisplay.setMap(map);
+  directionsDisplay.setPanel(document.getElementById('directions-panel'));
+  google.maps.event.addListener(map, 'click', function() {
+    infowindow.close();
+  });
+  // process the loaded GeoJSON data.
+  google.maps.event.addListener(map.data, 'addfeature', function(e) {
+    if (e.feature.getGeometry().getType() === 'Point') {
+      features_added++;
+      map.setCenter(e.feature.getGeometry().get());
+      // set the origin to the first point
+      if (!origin) origin = e.feature.getGeometry().get();
+      // set the destination to the second point
+      else waypts.push({
+        location: e.feature.getGeometry().get(),
+        stopover: true
+      });
+      setTimeout(function() {
+        features_added--;
+        if (features_added <= 0) google.maps.event.trigger(map, 'data_idle');
+      }, 500);
+    }
+  });
+  google.maps.event.addListenerOnce(map, 'data_idle', function() {
+    if (!destination) {
+      destination = waypts.pop();
+      destination = destination.location;
+      // calculate the directions once both origin and destination are set 
+      calculate();
+    }
+  });
+  map.data.addGeoJson(data);
+}
+google.maps.event.addDomListener(window, 'load', initialize);
+
+var data = {
+    "type": "FeatureCollection",
+    "features": []
+};
+
+for (index = 0; index < locs.length; index++) {
+    feature = {};
+    feature["type"] = "Feature";
+    var lng = locs[index]["lon"];
+    var lat = locs[index]["lat"];
+    feature["geometry"] = {
+        "type": "Point",
+        "coordinates": [
+            lng,
+            lat
+        ]
+    };
+    feature["properties"] = {
+        "prop0": "value" + index
+    };
+    data["features"][locs[index]["order"]] = feature;
+};
+
+</script>
+<script>
+  var final_map_string = "";
+  if (rt_length < 10 && rt_length > 0) {
+    document.getElementById("open_in_maps_button").style.display = "inline-block";
+    final_map_string = hotfix[0].slice(0, open_in_maps.length - 3);
+  }
+  function open_in_maps() {
+    window.open(final_map_string, '_blank');
+  }
+</script>
+
+{% endblock %}

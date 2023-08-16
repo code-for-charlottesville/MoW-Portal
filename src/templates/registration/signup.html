@@ -1,0 +1,49 @@
+<!-- templates/registration/signup.html -->
+{% extends 'base.html' %}
+
+{% block title %}Sign Up{% endblock %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="">Meals on Wheels</a>
+      </div>
+    </div>
+  </nav>
+  
+<div class="container" align="center">
+    <h2>Sign Up</h2>
+    <hr>
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2 well" align="left">
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary mybutton">Sign Up</button>   
+        </form>
+      </div>
+    </div>
+  </div>
+<style>
+    .mybutton{
+      background-color: #333333;
+      border-color: #333333;
+      color: white;
+    }
+    .mybutton:hover{
+      background-color:white;
+      border-color: #333333;
+      border-width: 1px;
+      color: #333333;
+    }
+  </style>
+{% endblock %}
